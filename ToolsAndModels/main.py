@@ -1,20 +1,9 @@
-import os
-from dotenv import load_dotenv
-from langchain_community.vectorstores import Chroma
-from langchain_core.runnables import RunnableMap, RunnablePassthrough
 from langchain.memory import ChatMessageHistory
-from langchain_core.output_parsers import JsonOutputParser, StrOutputParser
-from langchain_openai import ChatOpenAI
-from langchain_community.document_loaders import CSVLoader
 from langchain_community.embeddings.sentence_transformer import SentenceTransformerEmbeddings
-from langchain_core.prompts import PromptTemplate, ChatPromptTemplate
-from langchain.agents import AgentExecutor, create_tool_calling_agent, initialize_agent, AgentType
-from langchain.tools.retriever import create_retriever_tool
-from langchain_text_splitters import  RecursiveCharacterTextSplitter
-from langchain.chains import LLMChain, create_tagging_chain_pydantic
+from langchain_core.prompts import ChatPromptTemplate
+from langchain.agents import AgentExecutor, create_tool_calling_agent
 from langchain_core.tools import Tool
 from langchain.memory import ConversationBufferMemory
-from pydantic import BaseModel, Field
 from langchain.chains.conversation.memory import ConversationBufferMemory
 from langchain_core.runnables.history import RunnableWithMessageHistory
 from langchain.chains import ConversationChain
@@ -23,6 +12,8 @@ from  GenerateReceipt import receipt_tool
 from ReceipeGenerator import recipe_tool
 from food_fetch import food_tool
 from delivery import address_tool
+from fastapi import FastAPI
+import uvicorn
  
 def chit_chat(user_query):
     first_prompt = ChatPromptTemplate.from_template(
@@ -95,19 +86,38 @@ agent_with_chat_history = RunnableWithMessageHistory(
     input_messages_key="input",
     history_messages_key="chat_history",
 )
-agent_with_chat_history.invoke({"input":"Hello"},
-    config={"configurable": {"session_id": "<foo>"}},
-                               )
-agent_with_chat_history.invoke({"input":"I want to order a Burger"},
-    config={"configurable": {"session_id": "<foo>"}},
-                               )
-agent_with_chat_history.invoke({"input":"I want to order a momo"},
-    config={"configurable": {"session_id": "<foo>"}},
-                               )
-agent_with_chat_history.invoke({"input":"I want to have a delivery in Kapan"},
-    config={"configurable": {"session_id": "<foo>"}},
-    )
 
-agent_with_chat_history.invoke({"input":"Suggest me some appetizers"},
-    config={"configurable": {"session_id": "<foo>"}},
-    )
+
+app = FastAPI()
+
+
+import json
+@app.get("/restaurant/")
+def stream(query: str):
+    agent_output= agent_with_chat_history.invoke({"input":query},
+        config={"configurable": {"session_id": "<foo>"}},
+                                   )
+
+    return agent
+    
+    
+    print(agent_output)
+    # json.dumps(agent_output)
+   
+if __name__ == "__main__":
+    uvicorn.run(app = app, host = "127.0.0.1", port = 5556)
+    
+    
+# # agent_with_chat_history.invoke({"input":"Hello"},
+#     config={"configurable": {"session_id": "<foo>"}},
+# #                                )
+
+# # agent_with_chat_history.invoke({"input":"I want to order a momo"},
+# #     config={"configurable": {"session_id": "<foo>"}},
+# #                                )
+# # agent_with_chat_history.invoke({"input":"I want to have a delivery in Kapan"},
+# #     config={"configurable": {"session_id": "<foo>"}},
+# #     )
+# # agent_with_chat_history.invoke({"input":"Suggest me some appetizers"},
+# #     config={"configurable": {"session_id": "<foo>"}},
+# #     )

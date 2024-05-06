@@ -11,29 +11,29 @@ from langchain.chains import ConversationChain
 from llm.model import llm
 from langchain_core.output_parsers import JsonOutputParser, StrOutputParser, PydanticOutputParser
 
-def ask_user(ask_for=['service']):
-    first_prompt = ChatPromptTemplate.from_template(
-        f'''You are a smart waiter at a restaurant. First  you should ask the user in conversational ways whether the user's order is delivery or dine-in.
-        Don not ask addtional information just ask whether the order is delivery or dine-in.
-        # Example:"Would you like to have a dine-in or delivery?"
-        # ask_for:{ask_for}
-        '''
-    )
-    chain = LLMChain(llm=llm, prompt=first_prompt, verbose=True)
-    conv = chain.run(ask_for=ask_for)
-    return conv
+# def ask_user(ask_for=['service']):
+#     first_prompt = ChatPromptTemplate.from_template(
+#         f'''You are a smart waiter at a restaurant. First  you should ask the user in conversational ways whether the user's order is delivery or dine-in.
+#         Don not ask addtional information just ask whether the order is delivery or dine-in.
+#         # Example:"Would you like to have a dine-in or delivery?"
+#         # ask_for:{ask_for}
+#         '''
+#     )
+#     chain = LLMChain(llm=llm, prompt=first_prompt, verbose=True)
+#     conv = chain.run(ask_for=ask_for)
+#     return conv
+
 def ask_services():
-    service_type=input(ask_user())
+    # service_type=input(ask_user())
     first_prompt1 = ChatPromptTemplate.from_template(
        f""" You are a smart assistant waiter in a ABC restaurant.After the order, the user is asked whether he/she wants  delivery or dine-in.Your role is mentioned below:
         If the user wants delivery then tell them to provide their delivery address(only in case of delivery)
-        If the user wants dine-in then do nothing simply say thank you and enjoy the meal in our restaurant.
+        If the user wants dine-in then do nothing simply say thank you and enjoy the meal in our restaurant. Don't ask anything to the user just say thankyou if dine-in
        Provide staright forward answer related to whether the order is to be deliver or dine-in and do not ask any unwanted additional information
-       # ask_for :{service_type}
       """
     )
     chain = LLMChain(llm = llm, prompt=first_prompt1, verbose=True)
-    convs = chain.run(ask_for=service_type)
+    convs = chain.run("delivery")
     return convs
 
 class address(BaseModel):
@@ -47,5 +47,5 @@ def record_address(user_input):
 address_tool=Tool(
     name='deliveryaddress',
     func=record_address,
-    description="A tool that ask the delivery address to the customer and in case of dine in just say thank you and enjoy the meal."
+    description="A tool that asks the delivery address to the customer only in case of delivery."
 )

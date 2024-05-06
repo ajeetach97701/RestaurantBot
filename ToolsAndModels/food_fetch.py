@@ -5,7 +5,6 @@ from langchain_core.tools import Tool
 from llm.model import llm
 from database import vector_store
 
-
 def food_verify(user_input):
     print(user_input)
     # food_name_retriever = vector_store.as_retriever(search_type= 'mmr', kwargs=6)
@@ -13,6 +12,7 @@ def food_verify(user_input):
     food_template = """You are a virtual Restaurant Waiter. Your task is to check if the given food_name is present in the context or not. 
     If the food is available in the context and has multiple foods for it, show the user with all the available food names with its price.
     The output should be of JSON FORMAT without any backticks which is given in four backticks return only :
+    If the user asks for menu, show them top 5 data from context.
     If not tell them that the option is not available and ask them if they would like to order something else?
     Context is given in three backticks: ```{context}```
     User provided food name is given in double backticks: ``{input}``

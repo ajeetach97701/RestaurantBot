@@ -11,3 +11,4 @@ langchain-core==0.1.46
 langchain-google-genai
 pydantic==1.10
 pandas
+fastapi

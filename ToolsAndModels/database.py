@@ -15,4 +15,12 @@ text_splitter = RecursiveCharacterTextSplitter(chunk_size = 1000,chunk_overlap =
 splits = text_splitter.split_documents(docs)
 # embeddings = GoogleGenerativeAIEmbeddings(model = 'models/embedding-001')
 embeddings = SentenceTransformerEmbeddings(model_name="all-MiniLM-L6-v2")
-vector_store = Chroma.from_documents(documents=splits, embedding=embeddings,collection_name='menu_data' ,persist_directory = './Chroma/')
+# vector_store = Chroma.from_documents(documents=splits, embedding=embeddings,collection_name='menu_data' ,persist_directory = './Chroma/')
+
+
+
+from langchain.vectorstores.milvus import Milvus
+load_dotenv()
+host = os.getenv('HOST')
+port = os.getenv('PORT')
+vector_store = Milvus(embeddings,connection_args={'host':host,'port':port},collection_name="Food_Menu")
