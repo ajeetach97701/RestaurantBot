@@ -1,20 +1,11 @@
-import os
-from dotenv import load_dotenv
-from langchain_community.vectorstores import Chroma
-from langchain_core.runnables import RunnableMap, RunnablePassthrough
-from langchain_core.output_parsers import JsonOutputParser, StrOutputParser
-from langchain_openai import ChatOpenAI
-from langchain_community.document_loaders import CSVLoader
-from langchain_community.embeddings.sentence_transformer import SentenceTransformerEmbeddings
-from langchain_core.prompts import PromptTemplate, ChatPromptTemplate
-from langchain.agents import AgentExecutor, create_tool_calling_agent, initialize_agent, AgentType
-from langchain.tools.retriever import create_retriever_tool
-from langchain_text_splitters import  RecursiveCharacterTextSplitter
-from langchain.chains import LLMChain, create_tagging_chain_pydantic
+from langchain_core.runnables import RunnableMap
+from langchain.memory import ChatMessageHistory
+from langchain_core.prompts import ChatPromptTemplate
+from langchain.agents import AgentExecutor, create_tool_calling_agent
 from langchain_core.tools import Tool
 from langchain.memory import ConversationBufferMemory
-from pydantic import BaseModel, Field
 from langchain.chains.conversation.memory import ConversationBufferMemory
+from langchain_core.runnables.history import RunnableWithMessageHistory
 from langchain.chains import ConversationChain
 from llm.model import llm
 from  GenerateReceipt import receipt_tool
@@ -66,6 +57,7 @@ prompt = ChatPromptTemplate.from_messages(
         ("placeholder", "{agent_scratchpad}"),
     ]
 )
+memory = ChatMessageHistory(session_id="test-session")
 
 # # Construct the Tools agent
 agent = create_tool_calling_agent(llm, tools, prompt)
@@ -78,10 +70,11 @@ agent_executor = AgentExecutor(
     verbose=True, 
     early_stopping_method ='generate')
 
-from langchain.memory import ChatMessageHistory
-memory = ChatMessageHistory(session_id="test-session")
-from langchain_core.runnables.history import RunnableWithMessageHistory
 
+memory = ChatMessageHistory(session_id="test-session")
+tools = [address_tool]
+agent = create_tool_calling_agent(llm, tools, address_prompt)
+agent_executor = AgentExecutor( tools = tools, agent= agent,return_immediate_steps = False)
 agent_with_chat_history = RunnableWithMessageHistory(
     agent_executor,
     # This is needed because in most real world scenarios, a session id is needed
@@ -90,19 +83,26 @@ agent_with_chat_history = RunnableWithMessageHistory(
     input_messages_key="input",
     history_messages_key="chat_history",
 )
+# agent_executor.invoke({"input":"I want to have a delivery in Kapan"})
+
+
 
 while True:
+    print(agent_with_chat_history.invoke({"input":"I want to have a delivery"},
+        config={"configurable": {"session_id": "<foo>"}},
+                               ))
     print(agent_with_chat_history.invoke({"input":"Do you have fried chicken sandwich?"},
         config={"configurable": {"session_id": "<foo>"}},
                                ))
     print(agent_with_chat_history.invoke({"input":"What is its price?"},
     config={"configurable": {"session_id": "<foo>"}},
                                ))
-    print(agent_with_chat_history.invoke({"input":"I want to have a delivery"},
+    
+    agent_with_chat_history.invoke({"input":"I have finished the order."},
     config={"configurable": {"session_id": "<foo>"}},
-                               ))
-    print(agent_with_chat_history.invoke({"input":"I want to have a delivery in Kapan"},
-    config={"configurable": {"session_id": "<foo>"}},
-    ))
+                               )
+    # (agent_with_chat_history.invoke({"input":"I want it delivered."},
+    # config={"configurable": {"session_id": "<foo>"}},
+    # ))
     break
 

@@ -29,7 +29,8 @@ def calculate_receipt(user_query):
     {"food_name": "Steak", "price": 15.99},
     {"food_name": "Sushi", "price": 12.5}
     ]
-    template = """Given a List containing food_name and price, fetch all the price and add all the prices to return a total price. The list is given in three backticks. 
+    template = """You are an assistant at ABC restaurant. Your task is to return receipt to the user. Use this tool only when the user asks for receipt/bill.    
+    Given a List containing food_name and price, fetch all the price and add all the prices to return a total price. The list is given in three backticks. 
     ```{order_details}```
     ##User query is: ``{user_query}``
     The output should be of JSON."""

@@ -6,12 +6,10 @@ from llm.model import llm
 from database import vector_store
 
 
-
-
-
-
 def food_verify(user_input):
-    food_name_retriever = vector_store.as_retriever(search_type = 'mmr', k= 5)
+    print(user_input)
+    # food_name_retriever = vector_store.as_retriever(search_type= 'mmr', kwargs=6)
+    # food_name_retriever = vector_store.similarity_search(user_input)
     food_template = """You are a virtual Restaurant Waiter. Your task is to check if the given food_name is present in the context or not. 
     If the food is available in the context and has multiple foods for it, show the user with all the available food names with its price.
     The output should be of JSON FORMAT without any backticks which is given in four backticks return only :
@@ -22,16 +20,14 @@ def food_verify(user_input):
     prompt_recipe = PromptTemplate(
         input_variables=["context","input"],
         template=food_template
-    ) 
-    food_chain = (
-        {"context":food_name_retriever, "input":RunnablePassthrough()}
-        | prompt_recipe
-        | llm
-        | JsonOutputParser()
     )
-    print("food tool")
-    return food_chain.invoke(user_input)
+    chain = RunnableMap({
+        "context": lambda x: vector_store.similarity_search(x['input'], k=8),
+        "input": lambda x: x['input']
+    }) | prompt_recipe | llm | JsonOutputParser()
 
+    return chain.invoke({"input":"I want to order a burger"})
+# food_chain
 
 food_tool = Tool(
     name = "FoodverifyTool",
