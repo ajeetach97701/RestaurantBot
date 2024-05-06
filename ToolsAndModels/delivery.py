@@ -11,17 +11,28 @@ from langchain.chains import ConversationChain
 from llm.model import llm
 from langchain_core.output_parsers import JsonOutputParser, StrOutputParser, PydanticOutputParser
 
-# def ask_user(ask_for=['service']):
-#     first_prompt = ChatPromptTemplate.from_template(
-#         f'''You are a smart waiter at a restaurant. First  you should ask the user in conversational ways whether the user's order is delivery or dine-in.
-#         Don not ask addtional information just ask whether the order is delivery or dine-in.
-#         # Example:"Would you like to have a dine-in or delivery?"
-#         # ask_for:{ask_for}
-#         '''
-#     )
-#     chain = LLMChain(llm=llm, prompt=first_prompt, verbose=True)
-#     conv = chain.run(ask_for=ask_for)
-#     return conv
+
+
+
+
+
+
+
+
+
+
+
+def ask_user(ask_for=['service']):
+    first_prompt = ChatPromptTemplate.from_template(
+        f'''You are a smart waiter at a restaurant. First  you should ask the user in conversational ways whether the user's order is delivery or dine-in.
+        Don not ask addtional information just ask whether the order is delivery or dine-in.
+        # Example:"Would you like to have a dine-in or delivery?"
+        # ask_for:{ask_for}
+        '''
+    )
+    chain = LLMChain(llm=llm, prompt=first_prompt, verbose=True)
+    conv = chain.run(ask_for=ask_for)
+    return conv
 
 def ask_services():
     # service_type=input(ask_user())

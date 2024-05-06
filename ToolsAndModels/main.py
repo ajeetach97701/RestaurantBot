@@ -15,33 +15,6 @@ from delivery import address_tool
 from fastapi import FastAPI
 import uvicorn
  
-def chit_chat(user_query):
-    first_prompt = ChatPromptTemplate.from_template(
-       """You are a waiter at a restaurant. You should have conversation with the user.
-        First greet the user and welcome the user to our restaurant and ask him if he would like to order something.
-        Explain you need take the food order from the user.
-        ### ask_for : ```food_name```
-        Current conversation:
-        {history}
-        Human: {input}
-        AI Assistant:
-        # """
-    )
-    
-    # info_chain = LLMChain(llm = llm, prompt=first_prompt, verbose=True)
-    conversation_chain = ConversationChain(llm= llm, verbose = True,prompt = first_prompt, memory = ConversationBufferMemory(ai_prefix= "AI Assistant"))
-    ai_chat = conversation_chain.run(user_query)
-    print("Crete order tool")
-    return ai_chat
-
-
-
-chit_chat_tool = Tool(
-        name = "ChitChatTool",
-        func= chit_chat,
-        description = "A tool that does conversation with the user, greets the user and has conversation with the user."
-    )
-
 tools = [
     receipt_tool,
     recipe_tool,
@@ -55,7 +28,8 @@ prompt = ChatPromptTemplate.from_messages(
             "system",
             "You are a waiter at a restaurant. You should have conversation with the user.\
             First greet the user and welcome the user to our restaurant and ask him if he would like to order something.\
-            Look up for tools to answer the user query do not make up your own answers. Only use tools to answer the user query",
+            Look up for tools to answer the user query do not make up your own answers. Only use tools to answer the user query \
+            Always return the output in JSON format with double quotation(\") but not single quotation(\') with no (\n) in the outputs",
         ),
         ("placeholder", "{chat_history}"),
         ("human", "{input}"),
@@ -94,14 +68,14 @@ app = FastAPI()
 import json
 @app.get("/restaurant/")
 def stream(query: str):
-    agent_output= agent_with_chat_history.invoke({"input":query},
+    output= agent_with_chat_history.invoke({"input":query},
         config={"configurable": {"session_id": "<foo>"}},
                                    )
-
-    return agent
+    # agent_output
+    return {"result":output.get('output')}
     
     
-    print(agent_output)
+    # print(agent_output)
     # json.dumps(agent_output)
    
 if __name__ == "__main__":
