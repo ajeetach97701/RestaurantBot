@@ -32,7 +32,7 @@ def food_verify(user_input):
 food_tool = Tool(
     name = "FoodverifyTool",
     func = food_verify,
-    description="A tool that checks for food availability in the context"
+    description="A tool that checks for food availability in the context."
     
 )
 

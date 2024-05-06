@@ -3,8 +3,11 @@ from langchain_community.document_loaders import CSVLoader
 from langchain_community.embeddings.sentence_transformer import SentenceTransformerEmbeddings
 from langchain_text_splitters import  RecursiveCharacterTextSplitter
 from dotenv import load_dotenv
-from langchain_openai import ChatOpenAI
-
+from langchain.vectorstores.milvus import Milvus
+load_dotenv()
+import os
+host = os.getenv('HOST')
+port = os.getenv('PORT')
 
 loader = CSVLoader('./Datasets/menu.csv')
 docs = loader.load()
