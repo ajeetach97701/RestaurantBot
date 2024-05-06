@@ -28,7 +28,7 @@ def get_suggestion(query):
 
 
 
-food_tool = Tool(
+suggestion_tool = Tool(
     name = "ApetizerSuggestionTool",
     func = get_suggestion,
     description="A tool that suggests food to the user."

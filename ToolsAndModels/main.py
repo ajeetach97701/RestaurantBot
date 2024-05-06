@@ -11,7 +11,9 @@ from llm.model import llm
 from  GenerateReceipt import receipt_tool
 from ReceipeGenerator import recipe_tool
 from food_fetch import food_tool
+from suggestion import suggestion_tool
 from delivery import address_tool
+from order import order_tool
 from fastapi import FastAPI
 import uvicorn
  
@@ -20,6 +22,8 @@ tools = [
     recipe_tool,
     food_tool,
     address_tool,
+    suggestion_tool,
+    order_tool,
 ]
 
 prompt = ChatPromptTemplate.from_messages(
