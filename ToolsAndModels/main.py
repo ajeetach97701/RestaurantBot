@@ -61,16 +61,18 @@ agent_with_chat_history = RunnableWithMessageHistory(
     input_messages_key="input",
     history_messages_key="chat_history",
 )
+# redis_data = {
+#     "address": "",
+#     "order":[]
+# }
+
 app = FastAPI()
-redis_data = {
-    "address": "",
-    "order":[]
-}
 
 @app.get("/restaurant/")
 def stream(query: str, senderId: str):
-    if getData(senderId) is None: 
-        setData(senderId, redis_data)
+    # if getData(senderId) is None: 
+    #     setData(senderId, redis_data)
+    print(getData(senderId))
     with open('sender.txt', 'w') as file:
         file.write(senderId)
     output= agent_with_chat_history.invoke({"input":query},config={"configurable": {"session_id": "<foo>"}},)

@@ -3,16 +3,14 @@ from langchain.schema.runnable import RunnableMap
 from langchain.prompts import PromptTemplate
 from langchain_core.output_parsers import JsonOutputParser
 from Redis.redis import setData, getData
-from langchain.vectorstores.milvus import Milvus
 from dotenv import load_dotenv
 load_dotenv()
-import os
-from langchain.embeddings import HuggingFaceEmbeddings
 from langchain_core.tools import Tool
-
 from database import vector_store
-
-from database import vector_store
+redis_data = {
+    "address": "",
+    "order":[]
+}
 
 def order_item(query):
     extract_template = """
@@ -25,7 +23,7 @@ def order_item(query):
 
     The following JSON response should be in four fields,
     dict('itemsname':all available names in list, 'price':all available prices in list, 'quantity':quantity mentioned in the query, 'message':available options with prices if available, not available if not)
-    if quanity is not mentioned, set default to 1
+    if quanity is not mentioned, set default to 1.
     """
 
     prompt = PromptTemplate.from_template(extract_template)
@@ -37,22 +35,27 @@ def order_item(query):
     ) | prompt | llm | JsonOutputParser()
 
     result = chain.invoke({'query':query})
-
+    
     if len(result['itemsname']) == 0 or len(result['itemsname']) > 1:
         return result['message']
     else:
+        
         with open("sender.txt", "r") as file:
             senderId = file.read()
+            print(senderId)
         if getData(senderId) is None:
+            # if getData(senderId) is None: 
+            setData(senderId, redis_data)
             setData(senderId, {result['itemsname'][0].lower():{'quantity':result['quantity'], 'price':result['price'][0]}})
             print(getData(senderId))
         else:
             a = getData(senderId)
-            a[result['itemsname'][0].lower()] = {'quantity':result['quantity'], 'price':result['price'][0]}
-            a.get('order').append({a[result['itemsname'][0].lower()]:{'quantity':result['quantity'], 'price':result['price'][0]}})
+            print("print from a ",a)
+            # a[result['itemsname'][0].lower()] = {'quantity':result['quantity'], 'price':result['price'][0]}
+            a('order').append({a[result['itemsname'][0].lower()]:{'quantity':result['quantity'], 'price':result['price'][0]}})
             setData(senderId, a)
             print(getData(senderId))
-        return "What else would you like to order?"
+        return senderId,"What else would you like to order?"
 
 order_tool = Tool(
     name = "Ordertool",
@@ -60,7 +63,9 @@ order_tool = Tool(
     description="A tool that is used to take food order from the user and checks food availability"
 )
 
-   
-# if __name__ == "__main__":
-#     # flushAll()
-#     order_item("I would like to order 2 nachos")
+if __name__ == "__main__":
+    # flushAll()
+    order_item("I would like to order 2 nachos")
+    order_item("I would like to order 3 Cookies and Cream Shake")
+    
+    
