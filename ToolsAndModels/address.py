@@ -9,18 +9,8 @@ from langchain.memory import ChatMessageHistory
 memory = ChatMessageHistory(session_id="test-session")
 from langchain.chains import ConversationChain
 from llm.model import llm
+from Redis.redis import setData, getData, deleteData, flushAll
 from langchain_core.output_parsers import JsonOutputParser, StrOutputParser, PydanticOutputParser
-
-
-
-
-
-
-
-
-
-
-
 
 def ask_user(ask_for=['service']):
     first_prompt = ChatPromptTemplate.from_template(
@@ -53,10 +43,17 @@ class address(BaseModel):
 def record_address(user_input):
     user_input=input(ask_services())
     chain=create_tagging_chain_pydantic(address,llm)
+    with open('sender.txt', "r") as file:
+        senderId = file.read()
+    user_data = getData(senderId)
     response=chain.run(user_input)
+    user_data['address'] = response.address
+    setData(senderId, user_data)
     return response
 address_tool=Tool(
     name='deliveryaddress',
     func=record_address,
     description="A tool that asks the delivery address to the customer only in case of delivery."
 )
+
+

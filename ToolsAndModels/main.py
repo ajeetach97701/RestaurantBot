@@ -1,21 +1,18 @@
-from langchain.memory import ChatMessageHistory
-from langchain_community.embeddings.sentence_transformer import SentenceTransformerEmbeddings
-from langchain_core.prompts import ChatPromptTemplate
-from langchain.agents import AgentExecutor, create_tool_calling_agent
-from langchain_core.tools import Tool
-from langchain.memory import ConversationBufferMemory
-from langchain.chains.conversation.memory import ConversationBufferMemory
-from langchain_core.runnables.history import RunnableWithMessageHistory
-from langchain.chains import ConversationChain
-from llm.model import llm
-from  GenerateReceipt import receipt_tool
-from ReceipeGenerator import recipe_tool
-from food_fetch import food_tool
-from suggestion import suggestion_tool
-from delivery import address_tool
-from order import order_tool
-from fastapi import FastAPI
+import json
 import uvicorn
+from llm.model import llm
+from fastapi import FastAPI
+from order import order_tool
+from food_fetch import food_tool
+from address import address_tool
+from suggestion import suggestion_tool
+from ReceipeGenerator import recipe_tool
+from  receiptGenerator import receipt_tool
+from langchain.memory import ChatMessageHistory
+from langchain_core.prompts import ChatPromptTemplate
+from Redis.redis import getData, setData, deleteData, flushAll
+from langchain.agents import AgentExecutor, create_tool_calling_agent
+from langchain_core.runnables.history import RunnableWithMessageHistory
  
 tools = [
     receipt_tool,
@@ -64,18 +61,19 @@ agent_with_chat_history = RunnableWithMessageHistory(
     input_messages_key="input",
     history_messages_key="chat_history",
 )
-
-
 app = FastAPI()
+redis_data = {
+    "address": "",
+    "order":[]
+}
 
-
-import json
 @app.get("/restaurant/")
-def stream(query: str):
-    output= agent_with_chat_history.invoke({"input":query},
-        config={"configurable": {"session_id": "<foo>"}},
-                                   )
-    # agent_output
+def stream(query: str, senderId: str):
+    if getData(senderId) is None: 
+        setData(senderId, redis_data)
+    with open('sender.txt', 'w') as file:
+        file.write(senderId)
+    output= agent_with_chat_history.invoke({"input":query},config={"configurable": {"session_id": "<foo>"}},)
     return {"result":output.get('output')}
     
     

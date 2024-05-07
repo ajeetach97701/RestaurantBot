@@ -12,6 +12,8 @@ from langchain_core.tools import Tool
 
 from database import vector_store
 
+from database import vector_store
+
 def order_item(query):
     extract_template = """
     You are a virtual Restaurant Waiter. Your task is to check if the given food_name is present in the context or not. 
@@ -22,7 +24,7 @@ def order_item(query):
     User provided food name is given in double backticks: ``{query}``
 
     The following JSON response should be in four fields,
-    dict('itemsname':all available names in list, 'price':all available prices, 'quantity':quantity mentioned in the query, 'message':available options with prices if available, not available if not)
+    dict('itemsname':all available names in list, 'price':all available prices in list, 'quantity':quantity mentioned in the query, 'message':available options with prices if available, not available if not)
     if quanity is not mentioned, set default to 1
     """
 
@@ -39,13 +41,15 @@ def order_item(query):
     if len(result['itemsname']) == 0 or len(result['itemsname']) > 1:
         return result['message']
     else:
-        senderId = "10"
+        with open("sender.txt", "r") as file:
+            senderId = file.read()
         if getData(senderId) is None:
-            setData(senderId, {result['itemsname'][0]: result['quantity']})
+            setData(senderId, {result['itemsname'][0].lower():{'quantity':result['quantity'], 'price':result['price'][0]}})
             print(getData(senderId))
         else:
             a = getData(senderId)
-            a[result['itemsname'][0]] = result['quantity']
+            a[result['itemsname'][0].lower()] = {'quantity':result['quantity'], 'price':result['price'][0]}
+            a.get('order').append({a[result['itemsname'][0].lower()]:{'quantity':result['quantity'], 'price':result['price'][0]}})
             setData(senderId, a)
             print(getData(senderId))
         return "What else would you like to order?"
@@ -55,3 +59,8 @@ order_tool = Tool(
     func=order_item,
     description="A tool that is used to take food order from the user and checks food availability"
 )
+
+   
+# if __name__ == "__main__":
+#     # flushAll()
+#     order_item("I would like to order 2 nachos")
