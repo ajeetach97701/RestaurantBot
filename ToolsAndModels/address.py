@@ -1,29 +1,17 @@
-from langchain_core.prompts import ChatPromptTemplate
-from langchain.agents import AgentExecutor, create_tool_calling_agent
 from langchain.chains import LLMChain, create_tagging_chain_pydantic
 from langchain_core.tools import Tool
-from langchain_core.prompts import PromptTemplate, ChatPromptTemplate
-from langchain_core.runnables.history import RunnableWithMessageHistory
+from langchain_core.prompts import PromptTemplate
 from pydantic import BaseModel, Field
 from langchain.memory import ChatMessageHistory
 memory = ChatMessageHistory(session_id="test-session")
-from langchain.chains import ConversationChain
 from llm.model import llm
-from Redis.redis import setData, getData, deleteData, flushAll
-from langchain_core.output_parsers import JsonOutputParser, StrOutputParser, PydanticOutputParser
-from langchain_core.prompts import ChatPromptTemplate
-from langchain.agents import AgentExecutor, create_tool_calling_agent
-from langchain.chains import LLMChain, create_tagging_chain_pydantic
-from langchain_core.tools import Tool
-from langchain_core.prompts import PromptTemplate, ChatPromptTemplate
-from langchain_core.runnables.history import RunnableWithMessageHistory
+from Redis.redis import setData, getData
+from langchain_core.prompts import PromptTemplate
 from pydantic import BaseModel, Field
 from langchain.memory import ChatMessageHistory
 memory = ChatMessageHistory(session_id="test-session")
-from langchain.chains import ConversationChain
-
 from llm.model import llm
-from langchain_core.output_parsers import JsonOutputParser, StrOutputParser, PydanticOutputParser
+from langchain_core.output_parsers import PydanticOutputParser
 
 
 class address(BaseModel):
@@ -31,26 +19,9 @@ class address(BaseModel):
                                                                                               
 parser = PydanticOutputParser(pydantic_object=address)
 
-# address_chain=create_tagging_chain_pydantic(address,llm)
-
-# def ask_user():
-#     ask_for=['service']
-#     first_prompt = ChatPromptTemplate.from_template(
-#         f'''You are a smart waiter at a restaurant. First  you should ask the user in conversational ways whether the user's order is delivery or dine-in.
-#         Don not ask addtional information just ask whether the order is delivery or dine-in.
-#         # Example:"Would you like to have a dine-in or delivery?"
-#         # ask_for:{ask_for}
-#         '''
-#     )   
-#     chain = LLMChain(llm=llm, prompt=first_prompt, verbose=False)
-#     conv = chain.run(ask_for=ask_for) 
-#     return conv
 
 def ask_services():
-    # service_type=input(ask_user())
-    # partial_variables={"format_instructions": parser.get_format_instructions()
-    
-    
+   
     first_prompt1 = PromptTemplate(
         template= """ You are a smart assistant waiter in a ABC restaurant. When the user says he wants delivery, Ask him what his delivery address is.
        Provide staright forward answer related to the user query given in three backticks do not ask any unwanted additional information.
@@ -68,8 +39,15 @@ def ask_services():
 def record_address(user_input):
     # user_input = input(ask_services())
     chain=create_tagging_chain_pydantic(address,llm)
+    with open(r"sender.txt", "r") as file:
+            senderId = file.read()
+    print("helo",senderId)
     response=chain.run(user_input)
+    user_data = getData(senderId)
+    user_data['address'] = response.address
+    setData(senderId, user_data)
     print(response.address)
+    
     return response
 
 address_tool=Tool(
