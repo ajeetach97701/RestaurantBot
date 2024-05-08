@@ -2,20 +2,21 @@ from llm.model import llm
 from langchain.schema.runnable import RunnableMap
 from langchain.prompts import PromptTemplate
 from langchain_core.output_parsers import JsonOutputParser
-from Redis.redis import setData, getData
+from Redis.redis import setData, getData,flushAll
 from dotenv import load_dotenv
 load_dotenv()
 from langchain_core.tools import Tool
 from database import vector_store
+
 redis_data = {
     "address": "",
-    "order":[]
+    "order":{}
 }
 
 def order_item(query):
     extract_template = """
     You are a virtual Restaurant Waiter. Your task is to check if the given food_name is present in the context or not. 
-    If the food is available in the context and has multiple foods for it, show the user with all the available food names with its price.
+    If the food is available in the context and has multiple foods for it, show the user with all the available food names (Keep food name exact from context) with its price.
     The output should be of JSON FORMAT without any backticks which is given in four backticks return only :
     If not tell them that the option is not available and ask them if they would like to order something else?
     Context is given in three backticks: ```{context}```
@@ -39,22 +40,14 @@ def order_item(query):
     if len(result['itemsname']) == 0 or len(result['itemsname']) > 1:
         return result['message']
     else:
-        
-        with open("sender.txt", "r") as file:
+        with open(r"sender.txt", "r") as file:
             senderId = file.read()
-            print(senderId)
         if getData(senderId) is None:
-            # if getData(senderId) is None: 
             setData(senderId, redis_data)
-            setData(senderId, {result['itemsname'][0].lower():{'quantity':result['quantity'], 'price':result['price'][0]}})
-            print(getData(senderId))
-        else:
-            a = getData(senderId)
-            print("print from a ",a)
-            # a[result['itemsname'][0].lower()] = {'quantity':result['quantity'], 'price':result['price'][0]}
-            a('order').append({a[result['itemsname'][0].lower()]:{'quantity':result['quantity'], 'price':result['price'][0]}})
-            setData(senderId, a)
-            print(getData(senderId))
+        a = getData(senderId)
+        a.get('order')[result['itemsname'][0].lower()]={'quantity':result['quantity'], 'price':result['price'][0]}
+        setData(senderId, a)
+        print(getData(senderId))
         return senderId,"What else would you like to order?"
 
 order_tool = Tool(
@@ -65,7 +58,9 @@ order_tool = Tool(
 
 if __name__ == "__main__":
     # flushAll()
-    order_item("I would like to order 2 nachos")
-    order_item("I would like to order 3 Cookies and Cream Shake")
-    
+    # order_item("I would like to order 2 nachos")
+    # print(order_item(" yes order 2 nachos"))
+    # print(vector_store.similarity_search("Order chocolate fudge",k=8))
+    print(order_item("order 2 cookies and cream"))
+    # 
     

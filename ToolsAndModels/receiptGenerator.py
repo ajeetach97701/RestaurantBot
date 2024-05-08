@@ -21,16 +21,18 @@ def calculate_receipt(user_query):
     order_details = getData(senderId).get('order')
     print(order_details)
     template = """You are an assistant at ABC restaurant. Your task is to return receipt or order detials to the user. Use this tool only when the user asks for receipt/bill or if he asks for what his orders are.    
-    Given a dictionary containing itemsname and price, fetch all the price and add all the prices to return a total price. The list is given in three backticks. 
+    Given a dictionary containing itemname with quantity and price, fetch all the price and quantity and add all the prices multiplied with its quantity to return a total price. The list is given in three backticks. 
     ```{order_details}```
     ##User query is: ``{user_query}``
-    The output should be of JSON."""
+    The output should be of JSON.
+    Make sure to include the order details in JSON output as well."""
 
     total_price_calculator_prompt = PromptTemplate(input_variables=["user_query"], template=template)
     total_price_calculator_chain = LLMChain(llm = llm, prompt=total_price_calculator_prompt)
     total_sum = total_price_calculator_chain.run({"user_query":user_query, "order_details": order_details})
     print("receipt_tool")
-    return order_details
+    # return order_details
+    return total_sum
 
 
 receipt_tool = Tool(

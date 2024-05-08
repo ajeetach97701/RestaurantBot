@@ -1,2 +1,5 @@
 .env
 RestEnv/
+ToolsAndModels/__pycache__
+ToolsAndModels/Redis/__pycache__
+ToolsAndModels/llm/__pycache__
