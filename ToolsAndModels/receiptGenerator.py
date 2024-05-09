@@ -16,16 +16,17 @@ def calculate_receipt(user_query):
     # {"food_name": "Steak", "price": 15.99},
     # {"food_name": "Sushi", "price": 12.5}
     # ]
-    with open('sender.txt', "r") as file:
+    with open('ToolsAndModels\sender.txt', "r") as file:
         senderId = file.read()
     order_details = getData(senderId).get('order')
     print(order_details)
-    template = """You are an assistant at ABC restaurant. Your task is to return receipt or order detials to the user. Use this tool only when the user asks for receipt/bill or if he asks for what his orders are.    
-    Given a dictionary containing itemname with quantity and price, fetch all the price and quantity and add all the prices multiplied with its quantity to return a total price. The list is given in three backticks. 
+    template = """You are an assistant at ABC restaurant. Your task is to return receipt and order detials to the user if the user asks for bill/receipt. Use this tool only when the user asks for receipt/bill or if he asks for what his orders are.    
+    Given a JSON containing itemname with price and its quantity.The price is given only for a single quantity. To calculate the total price, you need to multiply quantity with price for each item and then sum all.
+    JSON given in triple backticks. 
     ```{order_details}```
     ##User query is: ``{user_query}``
     The output should be of JSON.
-    Make sure to include the order details in JSON output as well."""
+    Make sure to include the order details and total price in JSON."""
 
     total_price_calculator_prompt = PromptTemplate(input_variables=["user_query"], template=template)
     total_price_calculator_chain = LLMChain(llm = llm, prompt=total_price_calculator_prompt)
@@ -41,6 +42,8 @@ receipt_tool = Tool(
         description = "A tool that returns total price when the user asks for receipt or bill."
     )
 
+if __name__ == "__main__":
+    print(calculate_receipt("What is my bill?"))
 
 
 # if __name__ == "__main__":

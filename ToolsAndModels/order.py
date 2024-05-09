@@ -17,14 +17,16 @@ def order_item(query):
     extract_template = """
     You are a virtual Restaurant Waiter. Your task is to check if the given food_name is present in the context or not. 
     If the food is available in the context and has multiple foods for it, show the user with all the available food names (Keep food name exact from context) with its price.
+    Provide only single available food if food is found exactly in the context.
     The output should be of JSON FORMAT without any backticks which is given in four backticks return only :
     If not tell them that the option is not available and ask them if they would like to order something else?
     Context is given in three backticks: ```{context}```
     User provided food name is given in double backticks: ``{query}``
-
+    Make sure to extract the quantity from the query properly.
+    The quantity may be in word representation of numbers like one, two, three,etc. Replace it with 1,2,3 respectively.
+    Incase the quantity is not mentioned in words or numbers, set to 1.
     The following JSON response should be in four fields,
-    dict('itemsname':all available names in list, 'price':all available prices in list, 'quantity':quantity mentioned in the query, 'message':available options with prices if available, not available if not)
-    if quanity is not mentioned, set default to 1.
+    dict('itemsname':all available names in list, 'price':all available prices in list, 'quantity':quantity extracted from the query, 'message':available options with prices if available, not available if not)
     """
 
     prompt = PromptTemplate.from_template(extract_template)
@@ -53,7 +55,7 @@ def order_item(query):
 order_tool = Tool(
     name = "Ordertool",
     func=order_item,
-    description="A tool that is used to take food order from the user and checks food availability"
+    description="A tool that is used to add or take food order with quantity from the user and checks food availability"
 )
 
 if __name__ == "__main__":

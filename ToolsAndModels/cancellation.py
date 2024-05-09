@@ -12,10 +12,14 @@ from database import vector_store
 
 def cancel_item(query):
     template = """
-   Analyze the query and extract the food items name and quantity.
-   If the name of the food item matches similar to the provided context, replace the name with the exact name available in context.
+   Identify and extract the names of food items and their respective quantities from the query.
+   Make sure to extract the quantity from the query precisely.
+   The quantity may be mentioned in words or in numbers.
+   Extract the quantity in number representation form.
+   Set quantity to 1 if the user mentions 'one' or '1' in the query.
+   IF THE FOOD ITEM'S NAME CLOSELY MATCHES THE NAME IN THE CONTEXT PROVIDED, USE THE NAME WITH THE PRECISE NAME AVAILABLE IN THAT CONTEXT.
    If it does not match, keep the name as it is without any modification.
-   If you cannot analyze the quantity of the food item, set it to default -1.
+   If you cannot extract the quantity of the food item, set it to default -1.
    Provide the response in json format such as dict(foodname:quantity). Include all items.
    User query provided in double backticks: ``{query}``
    Context provided in triple backticks: ```{context}```
@@ -66,12 +70,12 @@ def cancel_item(query):
 cancel_tool = Tool(
     name = "Canceltool",
     func=cancel_item,
-    description="A tool that is used to cancel or remove food order of the user."
+    description="A tool that is used to cancel or remove food item with quantity from order of the user."
 )
 
 
 if __name__ == "__main__":
-    # print([i.page_content.split("Description")[0] for i in vector_store.similarity_search("cancel 2  fudge and  nachos")])
+    print([i.page_content.split("Description")[0] for i in vector_store.similarity_search("cancel 2  fudge and  nachos")])
     # print([i.page_content.split("Description")[0] for i in vector_store.similarity_search("Cancel 10 nachos",k=8)])
-    print(cancel_item("remove tuna from my order"))
+    # print(cancel_item("remove tuna from my order"))
     # print(vector_store.similarity_search('All items', k=30))
