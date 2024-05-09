@@ -7,6 +7,7 @@ from food_fetch import food_tool
 from address import address_tool
 from suggestion import suggestion_tool
 from ReceipeGenerator import recipe_tool
+from confirmation import confirmation_tool
 from cancellation import cancel_tool
 from  receiptGenerator import receipt_tool
 from langchain.memory import ChatMessageHistory
@@ -22,7 +23,8 @@ tools = [
     address_tool,
     suggestion_tool,
     order_tool,
-    cancel_tool
+    cancel_tool,
+    confirmation_tool
 ]
 
 prompt = ChatPromptTemplate.from_messages(
